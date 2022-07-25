@@ -3,11 +3,12 @@ package main
 /*
 #cgo  LDFLAGS: -lwsock32
 #cgo  LDFLAGS: -lWs2_32
-#cgo  CFLAGS:  -I  ./include
+#cgo  CFLAGS:  -I ./include -D_C_API
 #cgo  LDFLAGS:  -L ./lib  -lnfapi
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <windows.h>
 #include "nfapi.h"
 #include "Driver.h"
 */

@@ -1,11 +1,11 @@
 #include <stdio.h>
+#include <ws2tcpip.h>
+#include <windows.h>
 #include "Driver.h"
 #include "nfapi.h"
 
-#include <ws2tcpip.h>
 
-
-int inet_pton(int af, const char *csrc, void *dst)
+int z_inet_pton(int af, const char *csrc, void *dst)
 {
     char * src;
 
@@ -202,7 +202,7 @@ void setAddrV6(void *ppDetectInfo)
     struct sockaddr_in6 addr;
 	memset(&addr, 0, sizeof(addr));
 	addr.sin6_family = AF_INET6;
-    inet_pton(AF_INET6, c6addr,&addr.sin6_addr);
+    z_inet_pton(AF_INET6, c6addr,&addr.sin6_addr);
 	addr.sin6_port =  htons(cPort);
     
     memcpy(ppDetectInfo, &addr, sizeof(addr));

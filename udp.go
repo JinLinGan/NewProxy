@@ -6,6 +6,7 @@ package main
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <windows.h>
 #include "nfapi.h"
 */
 import "C"
