@@ -159,7 +159,7 @@ func go_udpCreated(id C.ENDPOINT_ID, pConnInfo C.PNF_UDP_CONN_INFO) {
 
 	//socks5需要tcp请求开发端口
 	if m.ptype == AtypSocks5 {
-		go sockHandler(id, m.ip, m.port, m.user, m.passw, m.socks)
+		sockHandler(id, m.ip, m.port, m.user, m.passw, m.socks)
 	}
 
 }
@@ -366,4 +366,8 @@ func UDPByte(iptype int, ip []byte, port []byte, buf []byte, bufflen int, AType 
 	}
 
 	return nil
+}
+
+func AddRule(pid int32) {
+	C.AddRule(C.int(pid))
 }

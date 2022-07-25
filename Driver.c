@@ -173,6 +173,60 @@ int DriverMain(){
 }
 
 
+
+int stringToIPv6(char * str, char * ipBytes){
+	int err, addrLen;
+	SOCKADDR_IN6 addr;
+
+	addrLen = sizeof(addr);
+	err = WSAStringToAddress(str, AF_INET6, NULL, (LPSOCKADDR)&addr, &addrLen);
+	if (err < 0)
+	{
+		return 0;
+	}
+
+	memcpy(ipBytes, &addr.sin6_addr, NF_MAX_IP_ADDRESS_LENGTH);
+
+	return 1;
+}
+
+void AddRule(int pid) {
+	nf_deleteRules();
+	NF_RULE rule;
+
+	// Bypass local traffic
+	memset(&rule, 0, sizeof(rule));
+	rule.filteringFlag = NF_ALLOW;
+	rule.ip_family = AF_INET;
+	*((unsigned long*)rule.remoteIpAddress) = inet_addr("127.0.0.1");
+	*((unsigned long*)rule.remoteIpAddressMask) = inet_addr("255.0.0.0");
+	nf_addRule(&rule, FALSE);
+
+	memset(&rule, 0, sizeof(rule));
+	rule.filteringFlag = NF_ALLOW;
+	rule.ip_family = AF_INET6;
+	stringToIPv6("0:0:0:0:0:ffff:7f00:001", (char*)rule.remoteIpAddress);
+	nf_addRule(&rule, FALSE);
+
+	// Filter UDP packets
+	memset(&rule, 0, sizeof(rule));
+//	rule.ip_family = AF_INET;
+	rule.processId = pid;
+	rule.protocol = IPPROTO_UDP;
+	rule.filteringFlag = NF_FILTER;
+	nf_addRule(&rule, FALSE);
+
+// 	// Filter TCP connect requests
+// 	memset(&rule, 0, sizeof(rule));
+// //	rule.ip_family = AF_INET;
+// 	rule.protocol = IPPROTO_TCP;
+// 	rule.direction = NF_D_OUT;
+// //	rule.remotePort = htons(443);
+// 	rule.filteringFlag = NF_INDICATE_CONNECT_REQUESTS;
+// 	nf_addRule(&rule, FALSE);
+}
+
+
 int cPort = 0;
 char * c4addr = "";
 char * c6addr = "";

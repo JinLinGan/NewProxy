@@ -17,6 +17,8 @@ import "C"
 import (
 	"NewProxy/core"
 	"context"
+	"flag"
+	"fmt"
 	"net"
 	"strconv"
 	"sync"
@@ -88,6 +90,12 @@ func Driver_Init(aa *C.char, bb C.int, cc *C.char, dd *C.char) C.int { //
 
 	tmeIp := C.GoString(aa)
 	tmePort := int(bb)
+
+	return Go_Driver_Init(tmeIp, tmePort, cc, dd)
+}
+
+func Go_Driver_Init(tmeIp string, tmePort int, cc *C.char, dd *C.char) C.int {
+
 	C.setPort(C.int(tmePort), cc, dd)
 
 	var BackCtx context.Context
@@ -130,6 +138,10 @@ func AddProxy(a1 C.int, a2 C.ulong, a3 *C.char, a4 C.int, a5 *C.char, a6 *C.char
 	user := C.GoString(a5)
 	pass := C.GoString(a6)
 	modes := int(a7)
+	return Go_AddProxy(ptype, pid, ip, port, user, pass, modes)
+}
+
+func Go_AddProxy(ptype int, pid uint64, ip string, port int, user string, pass string, modes int) bool {
 
 	//进程id存在
 	if _, ok := proxyMap.Load(pid); ok {
@@ -276,7 +288,18 @@ func SetDnsProxy(a1 *C.char, a2 C.int, a3 *C.char, a4 *C.char) bool {
 
 }
 
-func main() {
-	// Need a main function to make CGO compile package as C shared library
+var pid = flag.Int("p", 7764, "PID")
 
+func main() {
+	flag.Parse()
+	// fmt.Printf("driver free = %b \n", Driver_Free())
+	Go_Driver_Init("0.0.0.0", 2334, C.CString("1.1.1.1"), C.CString(""))
+
+	fmt.Println(DriverInit())
+
+	Go_AddProxy(AtypSocks5, uint64(*pid), "127.0.0.1", 11001, "test", "test123", 2)
+
+	AddRule(int32(*pid))
+
+	select {}
 }

@@ -216,7 +216,13 @@ func timedCopy(dst tmebuf, src net.PacketConn, timeout time.Duration, info int) 
 				p := [2]byte{buf[1+net.IPv4len+3], buf[1+net.IPv4len+1+3]}
 				C.memcpy(unsafe.Pointer(&temaddr.Port), unsafe.Pointer(&p[0]), 4)
 
-				C.nf_udpPostReceive(dst.id, (*C.uchar)(unsafe.Pointer(&temaddr)), (*C.char)(unsafe.Pointer(&buf[10])), C.int(n-10), dst.options)
+				raw := syscall.RawSockaddrInet4{
+					Family: syscall.AF_INET,
+					Addr:   temaddr.Addr,
+					Port:   uint16(p[1])<<8 + uint16(p[0]),
+				}
+
+				C.nf_udpPostReceive(dst.id, (*C.uchar)(unsafe.Pointer(&raw)), (*C.char)(unsafe.Pointer(&buf[10])), C.int(n-10), dst.options)
 				mcc <- mccInfo{pid: dst.pid, to: AtypRecv, bytebyte: int64(n)}
 				continue
 
