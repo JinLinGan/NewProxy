@@ -1,6 +1,6 @@
 //
 // 	NetFilterSDK 
-// 	Copyright (C) 2009 Vitaly Sidorov
+// 	Copyright (C) Vitaly Sidorov
 //	All rights reserved.
 //
 //	This file is a part of the NetFilter SDK.
@@ -8,16 +8,10 @@
 //	warranty of any kind, either expressed or implied.
 //
 
-#define _C_API
 
 #ifndef _NFAPI_H
 #define _NFAPI_H
 
-#include <winsock2.h>
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-//#include <ws2def.h>
 #include "nfevents.h"
 
 #ifdef _NFAPI_STATIC_LIB
@@ -53,7 +47,8 @@ typedef enum _NF_FLAGS
 	NFF_NONE		= 0,
 	NFF_DONT_DISABLE_TEREDO	= 1,
 	NFF_DONT_DISABLE_TCP_OFFLOADING	= 2,
-	NFF_DONT_ADD_ANTIVIRUS_EXCEPTIONS	= 4
+	NFF_DISABLE_AUTO_REGISTER	= 4,
+	NFF_DISABLE_AUTO_START	= 8,
 } NF_FLAGS;
 
 #ifndef _C_API
@@ -75,7 +70,8 @@ typedef enum _NF_FLAGS
 * @param driverName The name of hooking driver, without ".sys" extension.
 * @param pHandler Pointer to event handling object
 **/
-NFAPI_API NF_STATUS NFAPI_CC nf_init(const char * driverName, NF_EventHandler * pHandler);
+NFAPI_API NF_STATUS NFAPI_CC 
+nf_init(const char * driverName, NF_EventHandler * pHandler);
 
 /**
 * Stops the filtering thread, breaks all filtered connections and closes
@@ -90,6 +86,14 @@ nf_free();
 **/
 NFAPI_API NF_STATUS NFAPI_CC 
 nf_registerDriver(const char * driverName);
+
+/**
+* Registers and starts a driver with specified name (without ".sys" extension) and path to driver folder
+* @param driverName 
+* @param driverPath 
+**/
+NFAPI_API NF_STATUS NFAPI_CC 
+nf_registerDriverEx(const char * driverName, const char * driverPath);
 
 /**
 * Unregisters a driver with specified name (without ".sys" extension)

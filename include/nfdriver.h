@@ -1,6 +1,6 @@
 //
 // 	NetFilterSDK 
-// 	Copyright (C) 2013 Vitaly Sidorov
+// 	Copyright (C) Vitaly Sidorov
 //	All rights reserved.
 //
 //	This file is a part of the NetFilter SDK.
@@ -11,6 +11,8 @@
 
 #ifndef _NFDRIVER_H
 #define _NFDRIVER_H
+
+
 
 #define NF_TCP_PACKET_BUF_SIZE 8192
 #define NF_UDP_PACKET_BUF_SIZE 2 * 65536
@@ -80,6 +82,7 @@ typedef enum _NF_FILTERING_FLAG
 	NF_FILTER_AS_IP_PACKETS = 128,	// Indicate the traffic as IP packets via ipSend/ipReceive
 	NF_READONLY = 256,				// Don't block the IP packets and indicate them to ipSend/ipReceive only for monitoring
 	NF_CONTROL_FLOW = 512,			// Use the flow limit rules even without NF_FILTER flag
+	NF_REDIRECT = 1024,			// Redirect the outgoing TCP connections to address specified in redirectTo
 } NF_FILTERING_FLAG;
 
 #pragma pack(push, 1)
@@ -140,6 +143,13 @@ typedef UNALIGNED struct _NF_RULE
 } NF_RULE, *PNF_RULE;
 
 
+typedef struct _NF_PORT_RANGE
+{
+    unsigned short valueLow;
+    unsigned short valueHigh;
+} NF_PORT_RANGE, *PNF_PORT_RANGE;
+
+
 /**
 *	Filtering rule with additional fields
 **/
@@ -168,6 +178,15 @@ typedef UNALIGNED struct _NF_RULE_EX
 
 	// Process name tail mask (supports * as 0 or more symbols)
 	wchar_t			processName[MAX_PATH];
+
+	NF_PORT_RANGE	localPortRange; // Local port(s)
+	NF_PORT_RANGE	remotePortRange; // Remote port(s)
+
+	// Remote address for redirection as sockaddr_in for IPv4 and sockaddr_in6 for IPv6
+	unsigned char	redirectTo[NF_MAX_ADDRESS_LENGTH];
+	// Process identifier of a local proxy
+	unsigned long	localProxyProcessId;	
+
 } NF_RULE_EX, *PNF_RULE_EX;
 
 typedef unsigned __int64 ENDPOINT_ID;
@@ -300,6 +319,7 @@ typedef UNALIGNED struct _NF_FLOWCTL_SET_DATA
 } NF_FLOWCTL_SET_DATA, *PNF_FLOWCTL_SET_DATA;
 
 
+
 /**
 *	Binding rule
 **/
@@ -334,6 +354,8 @@ typedef UNALIGNED struct _NF_BINDING_RULE
 
 
 #pragma pack(pop)
+
+#ifdef WIN32
 
 typedef enum _NF_DRIVER_TYPE
 {
@@ -401,6 +423,9 @@ typedef enum _NF_DRIVER_TYPE
 #define NF_REQ_ADD_TEMP_RULE_EX \
     CTL_CODE(FILE_DEVICE_UNKNOWN, 119, METHOD_BUFFERED, FILE_ANY_ACCESS)
 
+#define NF_REQ_GET_UDP_ADDR_INFO \
+    CTL_CODE(FILE_DEVICE_UNKNOWN, 120, METHOD_BUFFERED, FILE_ANY_ACCESS)
+
 #define FSCTL_TCP_BASE     FILE_DEVICE_NETWORK
 
 #define _TCP_CTL_CODE(function, method, access) \
@@ -421,5 +446,7 @@ typedef enum _NF_DRIVER_TYPE
 
 #define IOCTL_DEVCTRL_OPEN \
             _DEVCTRL_CTL_CODE(0x200, METHOD_BUFFERED, FILE_READ_ACCESS | FILE_WRITE_ACCESS)
+
+#endif
 
 #endif // _NFDRIVER_H
